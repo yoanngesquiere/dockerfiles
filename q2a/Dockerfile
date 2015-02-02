@@ -2,13 +2,18 @@ FROM ubuntu:14.10
 
 RUN apt-get update
 RUN apt-get -y install git
-RUN apt-get install -y php5 apache2 libapache2-mod-php5 php5-mysql php5-cli
+RUN apt-get install -y php5 apache2 libapache2-mod-php5 php5-mysql php5-cli mysql-client
 
 WORKDIR /var/www/html
 RUN git clone https://github.com/q2a/question2answer.git
 RUN mv question2answer/qa-config-example.php question2answer/qa-config.php
 
-#RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+RUN sed -i -e 's/your-mysql-username/root/' question2answer/qa-config.php
+RUN sed -i -e 's/your-mysql-password//' question2answer/qa-config.php
+RUN sed -i -e 's/your-mysql-db-name/q2a/' question2answer/qa-config.php
+RUN sed -i -e "s/'127.0.0.1'/getenv\('Q2A_DB_1_PORT_3306_TCP_ADDR'\)/" question2answer/qa-config.php
+
+RUN cat question2answer/qa-config.php
 
 ENV APACHE_RUN_USER  www-data
 ENV APACHE_RUN_GROUP www-data
@@ -21,3 +26,8 @@ ENV APACHE_USER_UID 0
 EXPOSE 80
 
 CMD ["/usr/sbin/apache2", "-D", "FOREGROUND"]
+
+#When fig is up, RUN docker exec -ti q2a_web_1 /bin/bash
+# then run mysql -h "$Q2A_DB_1_PORT_3306_TCP_ADDR"
+# and CREATE DATABASE q2a;
+

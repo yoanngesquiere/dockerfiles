@@ -4,3 +4,6 @@ web:
     - db
 db:
   image: dockerfile/mariadb:latest
+  volumes:
+    - ./data:/etc/mysql
+    - ./data2:/var/lib/mysql
