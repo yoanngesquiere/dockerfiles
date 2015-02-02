@@ -1,0 +1,6 @@
+web:
+  build: .
+  links:
+    - db
+db:
+  image: dockerfile/mariadb:latest
