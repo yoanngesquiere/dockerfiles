@@ -9,13 +9,14 @@ RUN apt-get -y install mysql-server
 
 WORKDIR /var/www/html
 RUN git clone https://github.com/q2a/question2answer.git
-RUN mv question2answer/qa-config-example.php question2answer/qa-config.php
+RUN cp -r question2answer/* ./
+RUN mv qa-config-example.php qa-config.php
 
-RUN sed -i -e 's/your-mysql-username/root/' question2answer/qa-config.php
-RUN sed -i -e 's/your-mysql-password//' question2answer/qa-config.php
-RUN sed -i -e 's/your-mysql-db-name/q2a/' question2answer/qa-config.php
+RUN rm /var/www/html/index.html
 
-RUN cat question2answer/qa-config.php
+RUN sed -i -e 's/your-mysql-username/root/' qa-config.php
+RUN sed -i -e 's/your-mysql-password//' qa-config.php
+RUN sed -i -e 's/your-mysql-db-name/q2a/' qa-config.php
 
 ENV APACHE_RUN_USER  www-data
 ENV APACHE_RUN_GROUP www-data
@@ -25,10 +26,21 @@ ENV APACHE_LOCK_DIR  /var/lock/apache2
 ENV APACHE_LOG_DIR   /var/log/apache2
 ENV APACHE_USER_UID 0
 
-EXPOSE 80
 
-ADD launch.sh /etc/my_init.d/launch.sh
-RUN chmod +x /etc/my_init.d/launch.sh
+RUN /bin/bash -c "/usr/bin/mysqld_safe &" && \
+  sleep 5 && \
+  mysql -u root -e "CREATE DATABASE IF NOT EXISTS q2a;"
+
+RUN mkdir /etc/service/mysql
+RUN mkdir /etc/service/apache2
+RUN echo "#!/bin/bash"  > /etc/service/mysql/run
+RUN echo "mysqld_safe" >> /etc/service/mysql/run
+RUN echo "#!/bin/bash"  > /etc/service/apache2/run
+RUN echo "/usr/sbin/apache2 -D FOREGROUND" >> /etc/service/apache2/run
+RUN chmod +x /etc/service/mysql/run
+RUN chmod +x /etc/service/apache2/run
+
+EXPOSE 80
 
 CMD ["/sbin/my_init"]
 
