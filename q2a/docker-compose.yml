@@ -3,7 +3,9 @@ web:
   links:
     - db
 db:
-  image: dockerfile/mariadb:latest
+  image: mariadb:latest
   volumes:
     - ./data:/etc/mysql
     - ./data2:/var/lib/mysql
+  environment:
+      - MYSQL_ROOT_PASSWORD=root

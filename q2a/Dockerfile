@@ -1,15 +1,18 @@
-FROM ubuntu:14.10
+FROM ubuntu:latest
 
 RUN apt-get update
+RUN apt-get install -y software-properties-common
+RUN LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php -y
+RUN apt-get update
 RUN apt-get -y install git
-RUN apt-get install -y php5 apache2 libapache2-mod-php5 php5-mysql php5-cli mysql-client
+RUN apt-get install -y php5.6 apache2 libapache2-mod-php5.6 php5.6-mysql php5.6-cli mysql-client
 
 WORKDIR /var/www/html
 RUN git clone https://github.com/q2a/question2answer.git
 RUN mv question2answer/qa-config-example.php question2answer/qa-config.php
 
 RUN sed -i -e 's/your-mysql-username/root/' question2answer/qa-config.php
-RUN sed -i -e 's/your-mysql-password//' question2answer/qa-config.php
+RUN sed -i -e 's/your-mysql-password/root/' question2answer/qa-config.php
 RUN sed -i -e 's/your-mysql-db-name/q2a/' question2answer/qa-config.php
 RUN sed -i -e "s/'127.0.0.1'/getenv\('Q2A_DB_1_PORT_3306_TCP_ADDR'\)/" question2answer/qa-config.php
 
